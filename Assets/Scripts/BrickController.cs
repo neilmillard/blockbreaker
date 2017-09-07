@@ -4,12 +4,24 @@ using UnityEngine;
 
 public class BrickController : MonoBehaviour {
 
-	public int maxHits;
+	public static int breakableCount = 0;
+	public Sprite[] hitSprites;
+	public AudioClip crack;
+
 	private int timesHit;
+	private LevelManager levelmanager;
+	private bool isBreakable;
 
 	// Use this for initialization
 	void Start () {
+		isBreakable = (this.tag == "Breakable");
+		// increase the breakable Bricks on load
+		if (isBreakable){
+			breakableCount++;
+		}
+
 		timesHit = 0;
+		levelmanager = GameObject.FindObjectOfType<LevelManager> ();
 	}
 	
 	// Update is called once per frame
@@ -17,7 +29,34 @@ public class BrickController : MonoBehaviour {
 		
 	}
 
-	void OnCollisionEnter2D(Collision2D col){
+	void OnCollisionExit2D(Collision2D col){
+		// Play the audio even if the brick is destroyed
+		AudioSource.PlayClipAtPoint (crack, this.transform.position);
+		if (isBreakable){
+			HandleHits ();
+		}
+
+	}
+
+	void HandleHits() {
 		timesHit++;
+		if(timesHit >= hitSprites.Length + 1 ){
+			breakableCount--;
+			levelmanager.BrickDestroyed ();
+			Destroy (gameObject);
+		} else {
+			LoadSprites ();
+		}
+	}
+
+	void LoadSprites(){
+		int spriteIndex = timesHit - 1;
+		if (hitSprites[spriteIndex]) {
+			this.GetComponent<SpriteRenderer> ().sprite = hitSprites [spriteIndex];
+		}
+	}
+
+	void SimulateWin(){
+		levelmanager.LoadNextLevel ();
 	}
 }

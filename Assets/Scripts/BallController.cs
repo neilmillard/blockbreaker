@@ -8,7 +8,7 @@ public class BallController : MonoBehaviour {
 	private Rigidbody2D rb;
 
 	private Vector3 paddleToBallVector;
-	private bool gameStarted;
+	private bool gameStarted = false;
 
 	// Use this for initialization
 	void Start () {
@@ -16,7 +16,19 @@ public class BallController : MonoBehaviour {
 		paddle = GameObject.FindObjectOfType<PaddleController>();
 		paddleToBallVector = this.transform.position - paddle.transform.position;
 	}
-	
+
+	void OnCollisionExit2D (Collision2D coll)
+	{
+		AudioSource audio = GetComponent<AudioSource> ();
+		Vector2 tweak = new Vector2 (Random.Range (0f, 0.2f), Random.Range (0f, 0.2f));
+
+		if (gameStarted == true) {
+			audio.Play ();
+			Vector2 velocity = rb.velocity;
+			rb.velocity = velocity + tweak;
+		}
+	}
+
 	// Update is called once per frame
 	void Update ()
 	{
